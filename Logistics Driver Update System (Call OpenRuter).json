@@ -1,0 +1,773 @@
+{
+  "name": "Logistics Driver Update System (Call OpenRuter)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "e120a750-06ae-4441-8f37-1a24272778db",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1408,
+        1120
+      ],
+      "id": "00f58d79-5020-462f-914f-7972e0d0a5e3",
+      "name": "Webhook",
+      "webhookId": "e120a750-06ae-4441-8f37-1a24272778db"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ JSON.parse($('Message a model').item.json.output[0].content[0].text).Status }}",
+                    "rightValue": "Breakdown",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "f4ae426c-f76d-4894-ad7b-cc8ef2b46def"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Breakdown"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "58fd5414-cba0-403c-8d7c-a84a555748bf",
+                    "leftValue": "={{ JSON.parse($('Message a model').item.json.output[0].content[0].text).Status }}",
+                    "rightValue": "Delivered",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Delivered"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "bc8c9600-2df2-4b31-9c80-b42477cae821",
+                    "leftValue": "={{ JSON.parse($('Message a model').item.json.output[0].content[0].text).Status }}",
+                    "rightValue": "Delayed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Delayed"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -512,
+        1104
+      ],
+      "id": "9fd97024-3153-472c-add1-a2dc12dcd9c5",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "resource": "speech",
+        "voice": {
+          "__rl": true,
+          "value": "hpp4J3VqNfWAUOO0d1Us",
+          "mode": "list",
+          "cachedResultName": "Bella - Professional, Bright, Warm"
+        },
+        "text": "=Alert! Urgent update. Driver {{ JSON.parse($('Message a model').item.json.output[0].content[0].text).Driver_Name }} has reported a critical breakdown at {{ JSON.parse($('Message a model').item.json.output[0].content[0].text).Location }}. Please dispatch assistance immediately.",
+        "additionalOptions": {},
+        "requestOptions": {}
+      },
+      "type": "@elevenlabs/n8n-nodes-elevenlabs.elevenLabs",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        928
+      ],
+      "id": "b88d4db5-57ce-4b4d-8b57-af02c18d70b4",
+      "name": "Convert text to speech",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "elevenLabsApi": {
+          "id": "K6DegFvwJFZRmNBb",
+          "name": "ElevenLabs account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1488,
+        656
+      ],
+      "id": "48960455-99f7-410c-91a0-f76feeb8326c",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "sendTo": "kbneyo55@gmail.com",
+        "subject": "Logistics Update: Driver Delayed",
+        "message": "=Notice: Driver {{ JSON.parse($('Message a model').item.json.output[0].content[0].text).Driver_Name }} is currently delayed at {{ JSON.parse($('Message a model').item.json.output[0].content[0].text).Location }}. Current weather conditions at their location: {{ $json.data }}.\n\n\n\n📍 View Live Location on Map: https://www.google.com/maps/search/?api=1&query={{ encodeURI(JSON.parse($('Message a model').item.json.output[0].content[0].text).Location) }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "Logistics Manager "
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -64,
+        1504
+      ],
+      "id": "90d1210f-411b-4c29-bece-56ba95362dde",
+      "name": "Delayed message",
+      "webhookId": "2744581b-0ae2-4225-8bee-0e3c083874b1",
+      "retryOnFail": false,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "n7W8Uh1ANbHl9NlB",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1e4o6Alh7kIG-Nw4sjaAXJz9hIFO7lwICFrKlJSddJDk",
+          "mode": "list",
+          "cachedResultName": "Central Logistics Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1e4o6Alh7kIG-Nw4sjaAXJz9hIFO7lwICFrKlJSddJDk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1e4o6Alh7kIG-Nw4sjaAXJz9hIFO7lwICFrKlJSddJDk/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now }}",
+            "Driver_Name": "={{ JSON.parse($json.output[0].content[0].text).Driver_Name }}",
+            "Location ": "={{ JSON.parse($json.output[0].content[0].text).Location }}",
+            "Status": "={{ JSON.parse($json.output[0].content[0].text).Status }}",
+            "Raw_Message": "={{ $('Webhook').item.json.body.Body }}",
+            "Ticket_ID": "={{ $execution.id }}",
+            "Priority_Level": "={{ JSON.parse($('Message a model').item.json.output[0].content[0].text).Status == 'Breakdown' ? 'HIGH' : 'NORMAL' }}",
+            "Map_Link": "=https://www.google.com/maps/search/?api=1&query={{ encodeURI(JSON.parse($('Message a model').item.json.output[0].content[0].text).Location) }}"
+          },
+          "matchingColumns": [
+            "Date"
+          ],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Driver_Name",
+              "displayName": "Driver_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Location ",
+              "displayName": "Location ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Raw_Message",
+              "displayName": "Raw_Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Ticket_ID",
+              "displayName": "Ticket_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Priority_Level",
+              "displayName": "Priority_Level",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Map_Link",
+              "displayName": "Map_Link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -288,
+        1120
+      ],
+      "id": "1d0bd1f3-8e13-4d1e-af6c-43d490ed4df3",
+      "name": "Database",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "oWpKcYA91ctKXbp0",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1e4o6Alh7kIG-Nw4sjaAXJz9hIFO7lwICFrKlJSddJDk",
+          "mode": "list",
+          "cachedResultName": "Central Logistics Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1e4o6Alh7kIG-Nw4sjaAXJz9hIFO7lwICFrKlJSddJDk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 580868340,
+          "mode": "list",
+          "cachedResultName": "Error Logs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1e4o6Alh7kIG-Nw4sjaAXJz9hIFO7lwICFrKlJSddJDk/edit#gid=580868340"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now }}",
+            "Error_Message": "={{ $json.execution.error.message }}",
+            "Node_Name": "={{ $json.execution.lastNodeExecuted }}",
+            "Execution_URL": "=http://localhost:5678/execution/{{ $json.execution.id }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Error_Message",
+              "displayName": "Error_Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Node_Name",
+              "displayName": "Node_Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Execution_URL",
+              "displayName": "Execution_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1152,
+        576
+      ],
+      "id": "532581a3-543f-4d3e-91ae-833ec98bdf2f",
+      "name": "Error logs",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "oWpKcYA91ctKXbp0",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://wttr.in/{{ JSON.parse($('Message a model').item.json.output[0].content[0].text).Location }}?format=%C+%t",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -288,
+        1504
+      ],
+      "id": "2c13f264-72d1-423f-9c50-fbc55071e2c0",
+      "name": "Weather HTTP Request",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "sendTo": "kbneyo55@gmail.com",
+        "subject": "=URGENT: Breakdown Alert - {{ JSON.parse($('Message a model').item.json.output[0].content[0].text).Driver_Name }} at {{ JSON.parse($('Message a model').item.json.output[0].content[0].text).Location }}",
+        "message": "=A driver has reported a critical breakdown. Please listen to the attached audio file for location details and dispatch assistance immediately.\n\n\n\n📍 View Live Location on Map: https://www.google.com/maps/search/?api=1&query={{ encodeURI(JSON.parse($('Message a model').item.json.output[0].content[0].text).Location) }}",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          },
+          "senderName": "Logistics Alert System"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -64,
+        928
+      ],
+      "id": "853582c0-61d5-4f86-8881-d7e962d7a030",
+      "name": "Send voice message",
+      "webhookId": "bb35749d-f7fd-4278-85ee-f8574834990c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "n7W8Uh1ANbHl9NlB",
+          "name": "Gmail OAuth2 API"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "sendTo": "kbneyo55@gmail.com",
+        "subject": "Logistics Update: Delivery Completed",
+        "message": "=Good news! Driver {{ JSON.parse($('Message a model').item.json.output[0].content[0].text).Driver_Name }} has successfully completed their delivery at {{ JSON.parse($('Message a model').item.json.output[0].content[0].text).Location }} depot.\n\n\n📍 View Live Location on Map: https://www.google.com/maps/search/?api=1&query={{ encodeURI(JSON.parse($('Message a model').item.json.output[0].content[0].text).Location) }}",
+        "options": {
+          "appendAttribution": false,
+          "senderName": "Logistics Manager "
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -288,
+        1312
+      ],
+      "id": "c6b1dd43-ef95-4264-b0fc-9e230868bb36",
+      "name": "Delivery message",
+      "webhookId": "244e1979-5887-42d5-8530-fcf129b18753",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "n7W8Uh1ANbHl9NlB",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "kbneyo55@gmail.com",
+        "subject": "🚨 CRITICAL: Logistics System Failure",
+        "message": "=System Administrator,\n\nA fatal error has occurred in the Logistics Driver Update System. \n\nError Message: {{ $json.execution.error.message }} \n\nFailed Node: {{ $json.execution.lastNodeExecuted }} \n\nPlease review the logs immediately to restore system functionality: \n\nhttp://localhost:5678/execution/{{ $json.execution.id }}  \n\n- Automated Error Watchdog",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -1168,
+        848
+      ],
+      "id": "d89e9a16-cc82-4bb2-8054-0dae0f9c3ec5",
+      "name": "Send a message",
+      "webhookId": "4442896d-3a7d-47bf-8b41-9ffe76cfb830",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "n7W8Uh1ANbHl9NlB",
+          "name": "Gmail OAuth2 API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e93141f1-cbb0-4d41-863a-bbce505672ab",
+              "name": "output",
+              "value": "={{ [ { \"content\": [ { \"text\": $json.choices[0].message.content } ] } ] }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Message a model",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        -736,
+        1120
+      ],
+      "id": "8195a9d1-fef3-4598-aeb9-3e30156bd06f"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"openai/gpt-3.5-turbo\",\n  \"temperature\": 0.1,\n  \"messages\": [\n    {\n      \"role\": \"system\",\n      \"content\": \"You are a Senior Logistics Dispatch AI for a Nigerian transport company. Your sole job is to extract data from incoming driver text messages and output strictly in valid JSON format.\\n\\nCRITICAL RULES:\\n1. Extract exactly three keys: 'Driver_Name', 'Location', and 'Status'.\\n2. 'Status' must be EXACTLY ONE of these three options: 'Breakdown', 'Delivered', or 'Delayed'.\\n3. SLANG DICTIONARY:\\n- 'hold-up', 'go-slow', 'traffic', 'blocked' -> Map to 'Delayed'\\n- 'wahala', 'motor pack up', 'knocked', 'flat tire' -> Map to 'Breakdown'\\n- 'offloaded', 'dropped', 'cleared', 'delivered' -> Map to 'Delivered'\\n4. FALLBACK RULES:\\n- **First Priority:** If the driver explicitly states their name in the text message (e.g., 'na Samuel', 'this is John'), use that name.\\n- **Second Priority:** If they do not state their name, use the SYSTEM IDENTIFIED NAME provided below.\\n- **Third Priority:** If they do not state their name AND the System Identified Name is empty, use 'Unknown Driver'.\\n- If the driver forgets to state their location, use 'Unknown Location'.\\n5. OUTPUT FORMAT: Output ONLY raw JSON. Do not include markdown blocks or conversational text.\\n\\nSYSTEM IDENTIFIED NAME: {{ $json.Driver_Name }}\"\n    },\n    {\n      \"role\": \"user\",\n      \"content\": \"{{ $('Webhook').item.json.body.Body }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "name": "Call OpenRouter",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -960,
+        1120
+      ],
+      "id": "0674572b-6356-4bdb-b1d4-f293e0f3d30c",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "from": "+16203748688",
+        "to": "={{ $('Webhook').item.json.body.From }}",
+        "message": "=Hello {{ JSON.parse($('Message a model').item.json.output[0].content[0].text).Driver_Name }}, dispatch has received your breakdown alert at {{ JSON.parse($('Message a model').item.json.output[0].content[0].text).Location }}. Stay safe, a tow vehicle is being routed to your location.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.twilio",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        736
+      ],
+      "id": "9e43b5eb-da1d-4d87-969f-78d5f0223137",
+      "name": "Send an SMS/MMS/WhatsApp message",
+      "credentials": {
+        "twilioApi": {
+          "id": "WnRY2HCkB2NQQSCJ",
+          "name": "Twilio account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1e4o6Alh7kIG-Nw4sjaAXJz9hIFO7lwICFrKlJSddJDk",
+          "mode": "list",
+          "cachedResultName": "Central Logistics Tracker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1e4o6Alh7kIG-Nw4sjaAXJz9hIFO7lwICFrKlJSddJDk/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1961254840,
+          "mode": "list",
+          "cachedResultName": "Driver Directory",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1e4o6Alh7kIG-Nw4sjaAXJz9hIFO7lwICFrKlJSddJDk/edit#gid=1961254840"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Phone_Number",
+              "lookupValue": "={{ $('Webhook').item.json.body.From }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1184,
+        1120
+      ],
+      "id": "e61384ff-e72a-4ea3-885b-3ce3ec37ccb7",
+      "name": "Driver Directory",
+      "retryOnFail": true,
+      "waitBetweenTries": 2000,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "oWpKcYA91ctKXbp0",
+          "name": "Google Sheets OAuth2 API"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Driver Directory",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Database",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Convert text to speech",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send an SMS/MMS/WhatsApp message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delivery message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Database",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Weather HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert text to speech": {
+      "main": [
+        [
+          {
+            "node": "Send voice message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Error logs",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weather HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Delayed message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call OpenRouter": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Driver Directory": {
+      "main": [
+        [
+          {
+            "node": "Call OpenRouter",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "b6ffaf77-ffee-4d83-bf95-aff9fc4913a1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "63b14ca524df26b296aae5eb6e29636cb4d4724db1808b932697deae11fe0ef6"
+  },
+  "id": "gKjDvgN6oOGZITV3",
+  "tags": []
+}
