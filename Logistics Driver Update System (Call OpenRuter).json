@@ -532,7 +532,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer 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"
+              "value": "Bearer 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"
             },
             {
               "name": "Content-Type",
@@ -755,7 +755,7 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
@@ -763,7 +763,7 @@
     "callerPolicy": "workflowsFromSameOwner",
     "availableInMCP": false
   },
-  "versionId": "b6ffaf77-ffee-4d83-bf95-aff9fc4913a1",
+  "versionId": "53e8409c-7a5e-4662-ac19-15b8a41f9c3a",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "63b14ca524df26b296aae5eb6e29636cb4d4724db1808b932697deae11fe0ef6"
